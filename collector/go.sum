@@ -358,6 +358,8 @@ github.com/open-telemetry/opentelemetry-collector-contrib/processor/resourceproc
 github.com/open-telemetry/opentelemetry-collector-contrib/processor/resourceprocessor v0.131.0/go.mod h1:zy16qPh5/PIyjWa0c52W+w4jjpEw85vFXHKyaxdcIr4=
 github.com/open-telemetry/opentelemetry-collector-contrib/processor/spanprocessor v0.131.0 h1:rx/r8x/ov2CBf2EZGhJXL+Y1DqIBREqJBMDPZJLWJ6U=
 github.com/open-telemetry/opentelemetry-collector-contrib/processor/spanprocessor v0.131.0/go.mod h1:Pokpm2U9pSTkDGGaqRlPLaShudeTWsdCaQDsMh0DnNw=
+github.com/open-telemetry/opentelemetry-collector-contrib/processor/transformprocessor v0.131.0 h1:yZ2u46ANXX1GK6M2snbQ+JdIq802l9npqJzGPAKZHLg=
+github.com/open-telemetry/opentelemetry-collector-contrib/processor/transformprocessor v0.131.0/go.mod h1:KvFyVWJwuGEYLRFZOaypCGRSjgNxKoqM0T3h0U0VjIM=
 github.com/opencontainers/go-digest v1.0.0 h1:apOUWs51W5PlhuyGyz9FCeeBIOUDA/6nW8Oi/yOhh5U=
 github.com/opencontainers/go-digest v1.0.0/go.mod h1:0JzlMkj0TRzQZfJkVvzbP0HBR3IKzErnv2BNG4W4MAM=
 github.com/opencontainers/image-spec v1.1.1 h1:y0fUlFfIZhPF1W537XOLg0/fcx6zcHCJwooC2xJA040=
