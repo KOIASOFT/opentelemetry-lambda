@@ -18,6 +18,8 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
+	"time"
 
 	"github.com/open-telemetry/opentelemetry-collector-contrib/confmap/provider/s3provider"
 	"github.com/open-telemetry/opentelemetry-collector-contrib/confmap/provider/secretsmanagerprovider"
@@ -48,25 +50,44 @@ type Collector struct {
 }
 
 func getConfig(logger *zap.Logger) string {
-	val, ex := os.LookupEnv("OPENTELEMETRY_COLLECTOR_CONFIG_URI")
+	// Resolve and validate collector config URI before starting lifecycle manager.
+	val, ex := waitForConfigUri(logger)
+
 	if ex {
 		logger.Info("Using config URI from environment variable", zap.String("uri", val))
 		return val
+	} else {
+		logger.Fatal("Configuration not found")
+		os.Exit(254)
+		return ""
+	}
+}
+
+func waitForConfigUri(logger *zap.Logger) (string, bool) {
+	configURI := os.Getenv("OPENTELEMETRY_COLLECTOR_CONFIG_URI")
+
+	if configURI == "" {
+		configURI = "/app/secrets/otlp/lambda.yaml"
+		logger.Info("OPENTELEMETRY_COLLECTOR_CONFIG_URI not set, using default", zap.String("uri", configURI))
 	}
 
-	// The name of the environment variable was changed
-	// This is the old name, kept for backwards compatibility
-	oldVal, oldEx := os.LookupEnv("OPENTELEMETRY_COLLECTOR_CONFIG_FILE")
-	if oldEx {
-		logger.Info("Using config URI from deprecated environment variable", zap.String("uri", oldVal))
-		logger.Warn("The OPENTELEMETRY_COLLECTOR_CONFIG_FILE environment variable is deprecated. Please use OPENTELEMETRY_COLLECTOR_CONFIG_URI instead.")
-		return oldVal
+	// If local path (starts with '/' or no protocol like '://'), wait up to 10s for file to exist.
+	if strings.HasPrefix(configURI, "/") || !strings.Contains(configURI, "://") {
+		deadline := time.Now().Add(10 * time.Second)
+		for {
+			if _, err := os.Stat(configURI); err == nil {
+				break
+			}
+			if time.Now().After(deadline) {
+				logger.Fatal("Collector config file not found within timeout", zap.String("uri", configURI), zap.Duration("timeout", 10*time.Second))
+				return "", false
+			}
+			time.Sleep(100 * time.Millisecond)
+		}
+		logger.Info("Collector config file found", zap.String("uri", configURI))
 	}
 
-	// If neither environment variable is set, use the default
-	defaultVal := "/opt/collector-config/config.yaml"
-	logger.Info("Using default config URI", zap.String("uri", defaultVal))
-	return defaultVal
+	return configURI, true
 }
 
 func NewCollector(logger *zap.Logger, factories otelcol.Factories, version string) *Collector {
